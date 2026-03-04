@@ -17,11 +17,20 @@ One-command bootstrap for AI coding CLI tools -- installs, configures, and hands
 ## Install
 
 ```bash
-# Run directly (recommended)
-npx cc-boot
+# macOS / Linux (auto-installs Node.js if missing)
+curl -fsSL https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.sh | bash
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.ps1 | iex
+
+# macOS via Homebrew
+brew install wh000wh000/cc-boot/cc-boot
+
+# npx (if Node.js already installed)
+npx @haibane/cc-boot
 
 # Or install globally
-npm i -g cc-boot
+npm i -g @haibane/cc-boot
 ```
 
 ## Usage
@@ -65,7 +74,7 @@ cc-boot handoff --install
 ## Programmatic API
 
 ```ts
-import { TOOL_TYPES, TOOL_LABELS, TOOL_ALIASES } from 'cc-boot'
+import { TOOL_TYPES, TOOL_LABELS, TOOL_ALIASES } from '@haibane/cc-boot'
 ```
 
 ## Requirements
@@ -95,11 +104,20 @@ MIT
 ## 安装
 
 ```bash
-# 直接运行（推荐）
-npx cc-boot
+# macOS / Linux（自动安装 Node.js）
+curl -fsSL https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.sh | bash
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.ps1 | iex
+
+# macOS 通过 Homebrew
+brew install wh000wh000/cc-boot/cc-boot
+
+# npx（已有 Node.js 的情况）
+npx @haibane/cc-boot
 
 # 或全局安装
-npm i -g cc-boot
+npm i -g @haibane/cc-boot
 ```
 
 ## 使用方式
