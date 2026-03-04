@@ -1,0 +1,66 @@
+export default {
+  // General
+  'welcome': '欢迎使用 cc-boot',
+  'done': '完成',
+  'skip': '跳过',
+  'cancel': '已取消',
+  'error': '错误',
+  'yes': '是',
+  'no': '否',
+
+  // Language
+  'lang.select': '请选择语言 / Select language',
+  'lang.ai_output': '选择 AI 输出语言',
+
+  // Tools
+  'tools.select': '选择要安装的 AI 编程工具',
+  'tools.installed': '已安装',
+  'tools.not_installed': '未安装',
+  'tools.installing': '正在安装 {{tool}}...',
+  'tools.install_success': '{{tool}} 安装成功',
+  'tools.install_fail': '{{tool}} 安装失败',
+  'tools.version': '版本: {{version}}',
+
+  // Provider
+  'provider.select': '选择 API 供应商',
+  'provider.api_key': '请输入 API Key',
+  'provider.api_url': '自定义 API URL',
+  'provider.configuring': '正在配置 {{provider}} 供应商...',
+  'provider.done': '供应商配置完成',
+
+  // MCP
+  'mcp.select': '选择要启用的 MCP 服务',
+  'mcp.configuring': '正在配置 MCP 服务...',
+  'mcp.done': 'MCP 配置完成',
+
+  // Workflow
+  'workflow.select': '选择要安装的工作流',
+  'workflow.installing': '正在安装工作流...',
+  'workflow.done': '工作流安装完成',
+
+  // CC Switch
+  'ccswitch.detect': '检测 CC Switch...',
+  'ccswitch.found': 'CC Switch 已安装',
+  'ccswitch.not_found': '未检测到 CC Switch',
+  'ccswitch.install_prompt': '是否安装 CC Switch？（推荐用于日常管理）',
+  'ccswitch.installing': '正在安装 CC Switch...',
+  'ccswitch.handoff': '正在将配置移交给 CC Switch...',
+  'ccswitch.done': 'CC Switch 配置完成',
+
+  // Doctor
+  'doctor.title': '环境诊断',
+  'doctor.checking': '正在检查环境...',
+
+  // Init
+  'init.title': '初始化 AI 编程环境',
+  'init.complete': '初始化完成！',
+  'init.summary': '配置摘要',
+
+  // Menu
+  'menu.title': 'cc-boot 主菜单',
+  'menu.init': '完整初始化',
+  'menu.setup': '安装单个工具',
+  'menu.doctor': '环境诊断',
+  'menu.handoff': '移交到 CC Switch',
+  'menu.exit': '退出',
+}
