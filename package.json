@@ -1,5 +1,5 @@
 {
-  "name": "cc-boot",
+  "name": "@haibane/cc-boot",
   "version": "0.1.0",
   "type": "module",
   "description": "One-command bootstrap for AI coding CLI tools — installs, configures, then hands off to CC Switch",
