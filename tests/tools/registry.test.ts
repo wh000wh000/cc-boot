@@ -20,9 +20,9 @@ describe('Tool Registry', () => {
   })
 
   describe('getAllAdapters', () => {
-    it('should return all 5 adapters', () => {
+    it('should return all 6 adapters', () => {
       const adapters = getAllAdapters()
-      expect(adapters).toHaveLength(5)
+      expect(adapters).toHaveLength(6)
     })
 
     it('should include all tool types', () => {
@@ -41,6 +41,7 @@ describe('Tool Registry', () => {
       expect(resolveToolType('gemini-cli')).toBe('gemini-cli')
       expect(resolveToolType('opencode')).toBe('opencode')
       expect(resolveToolType('openclaw')).toBe('openclaw')
+      expect(resolveToolType('ccr')).toBe('ccr')
     })
 
     it('should resolve aliases', () => {
@@ -50,6 +51,8 @@ describe('Tool Registry', () => {
       expect(resolveToolType('gem')).toBe('gemini-cli')
       expect(resolveToolType('oc')).toBe('opencode')
       expect(resolveToolType('claw')).toBe('openclaw')
+      expect(resolveToolType('router')).toBe('ccr')
+      expect(resolveToolType('claude-code-router')).toBe('ccr')
     })
 
     it('should be case-insensitive', () => {
