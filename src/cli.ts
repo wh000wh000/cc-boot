@@ -68,6 +68,16 @@ cli
     await handoff(options)
   })
 
+// update: check and apply self-update
+cli
+  .command('update', 'Check for updates and upgrade cc-boot to the latest version')
+  .option('--check', 'Only check for updates without installing')
+  .action(async (options) => {
+    banner()
+    const { update } = await import('./commands/update.js')
+    await update(options)
+  })
+
 cli.help()
 cli.version(version)
 
