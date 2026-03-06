@@ -63,4 +63,16 @@ export default {
   'menu.doctor': 'Environment diagnostics',
   'menu.handoff': 'Hand off to CC Switch',
   'menu.exit': 'Exit',
+
+  // Errors
+  'error.network': 'Network connection failed, check your network and proxy settings',
+  'error.permission': 'Permission denied, try using sudo',
+  'error.not_found': 'File or directory not found',
+  'error.invalid_api_key': 'Invalid or expired API key, check your API configuration',
+  'error.rate_limit': 'API rate limit exceeded, try again later',
+  'error.install_failed': 'Installation failed, check your network and retry',
+  'error.config_invalid': 'Configuration syntax error, check JSON/YAML format',
+  'error.unknown': 'An unknown error occurred',
+  'error.debug_hint': 'Tip: set CC_BOOT_DEBUG=1 to see the full error',
+  'error.cancelled': 'Operation cancelled',
 }

@@ -3,6 +3,10 @@ import cac from 'cac'
 import { version } from '../package.json' with { type: 'json' }
 import { banner } from './utils/ui.js'
 import { initI18n } from './i18n/index.js'
+import { registerGlobalErrorHandlers, withErrorHandler } from './utils/error-handler.js'
+
+// Register global handlers first (uncaughtException, unhandledRejection, SIGINT)
+registerGlobalErrorHandlers()
 
 await initI18n()
 
@@ -11,11 +15,11 @@ const cli = cac('cc-boot')
 // Default: interactive menu
 cli
   .command('', 'Interactive menu')
-  .action(async () => {
+  .action(withErrorHandler('menu', async () => {
     banner()
     const { menu } = await import('./commands/menu.js')
     await menu()
-  })
+  }))
 
 // init: full initialization
 cli
@@ -31,11 +35,11 @@ cli
   .option('--ai-lang <lang>', 'AI output language')
   .option('--mcp <services>', 'Comma-separated MCP services')
   .option('--no-ccswitch', 'Skip CC Switch installation')
-  .action(async (options) => {
+  .action(withErrorHandler('init', async (options) => {
     banner()
     const { init } = await import('./commands/init.js')
     await init(options)
-  })
+  }))
 
 // setup: single tool install
 cli
@@ -43,40 +47,40 @@ cli
   .option('-s, --silent', 'Non-interactive mode')
   .option('-p, --provider <provider>', 'API provider')
   .option('-k, --api-key <key>', 'API key')
-  .action(async (tool: string, options) => {
+  .action(withErrorHandler('setup', async (tool: string, options) => {
     banner()
     const { setupTool } = await import('./commands/setup-tool.js')
     await setupTool(tool, options)
-  })
+  }))
 
 // doctor: environment diagnostics
 cli
   .command('doctor', 'Environment diagnostics')
-  .action(async () => {
+  .action(withErrorHandler('doctor', async () => {
     banner()
     const { doctor } = await import('./commands/doctor.js')
     await doctor()
-  })
+  }))
 
 // handoff: export config to CC Switch
 cli
   .command('handoff', 'Hand off configuration to CC Switch')
   .option('--install', 'Install CC Switch if not present')
-  .action(async (options) => {
+  .action(withErrorHandler('handoff', async (options) => {
     banner()
     const { handoff } = await import('./commands/handoff.js')
     await handoff(options)
-  })
+  }))
 
 // update: check and apply self-update
 cli
   .command('update', 'Check for updates and upgrade cc-boot to the latest version')
   .option('--check', 'Only check for updates without installing')
-  .action(async (options) => {
+  .action(withErrorHandler('update', async (options) => {
     banner()
     const { update } = await import('./commands/update.js')
     await update(options)
-  })
+  }))
 
 cli.help()
 cli.version(version)

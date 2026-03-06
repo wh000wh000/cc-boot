@@ -63,4 +63,16 @@ export default {
   'menu.doctor': '环境诊断',
   'menu.handoff': '移交到 CC Switch',
   'menu.exit': '退出',
+
+  // Errors
+  'error.network': '网络连接失败，请检查网络和代理设置',
+  'error.permission': '权限不足，请尝试使用 sudo',
+  'error.not_found': '找不到文件或目录',
+  'error.invalid_api_key': 'API Key 无效或已过期，请检查 API 配置',
+  'error.rate_limit': 'API 请求频率过高，请稍后再试',
+  'error.install_failed': '安装失败，请检查网络连接后重试',
+  'error.config_invalid': '配置文件格式错误，请检查 JSON/YAML 格式',
+  'error.unknown': '发生未知错误',
+  'error.debug_hint': '提示：设置 CC_BOOT_DEBUG=1 可查看完整错误信息',
+  'error.cancelled': '操作已取消',
 }
