@@ -6,6 +6,7 @@ import { CodexAdapter } from './codex.js'
 import { GeminiCliAdapter } from './gemini-cli.js'
 import { OpenCodeAdapter } from './opencode.js'
 import { OpenClawAdapter } from './openclaw.js'
+import { CcrAdapter } from './ccr.js'
 
 const adapterMap: Record<ToolType, ToolAdapter> = {
   'claude-code': new ClaudeCodeAdapter(),
@@ -13,6 +14,7 @@ const adapterMap: Record<ToolType, ToolAdapter> = {
   'gemini-cli': new GeminiCliAdapter(),
   'opencode': new OpenCodeAdapter(),
   'openclaw': new OpenClawAdapter(),
+  'ccr': new CcrAdapter(),
 }
 
 /** Get adapter for a specific tool type */

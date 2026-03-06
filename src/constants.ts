@@ -43,7 +43,7 @@ export const CC_SWITCH_BREW_CASK = 'cc-switch'
 export const CC_SWITCH_DEEP_LINK_PREFIX = 'ccswitch://'
 
 // Supported tools
-export const TOOL_TYPES = ['claude-code', 'codex', 'gemini-cli', 'opencode', 'openclaw'] as const
+export const TOOL_TYPES = ['claude-code', 'codex', 'gemini-cli', 'opencode', 'openclaw', 'ccr'] as const
 export type ToolType = (typeof TOOL_TYPES)[number]
 
 export const TOOL_ALIASES: Record<string, ToolType> = {
@@ -55,6 +55,8 @@ export const TOOL_ALIASES: Record<string, ToolType> = {
   gemini: 'gemini-cli',
   oc: 'opencode',
   claw: 'openclaw',
+  router: 'ccr',
+  'claude-code-router': 'ccr',
 }
 
 export const TOOL_LABELS: Record<ToolType, string> = {
@@ -63,6 +65,7 @@ export const TOOL_LABELS: Record<ToolType, string> = {
   'gemini-cli': 'Gemini CLI (Google)',
   'opencode': 'OpenCode',
   'openclaw': 'OpenClaw',
+  'ccr': 'Claude Code Router (CCR)',
 }
 
 // Workflow namespace
