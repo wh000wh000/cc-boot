@@ -51,6 +51,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@rainbowatcher/toml-edit-js": "^0.6.4",
     "ansis": "^4.1.0",
     "cac": "^6.7.14",
     "fs-extra": "^11.3.2",
@@ -59,8 +60,7 @@
     "ora": "^9.0.0",
     "pathe": "^2.0.3",
     "tinyexec": "^1.0.1",
-    "zcf": "^3.6.1",
-    "@rainbowatcher/toml-edit-js": "^0.6.4"
+    "zcf": "^3.6.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
