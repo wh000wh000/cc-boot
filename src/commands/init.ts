@@ -23,6 +23,7 @@ export interface InitOptions {
   provider?: string
   apiKey?: string
   apiUrl?: string
+  model?: string
   lang?: string
   aiLang?: string
   mcp?: string
@@ -67,6 +68,7 @@ export async function init(options: InitOptions): Promise<void> {
     lang,
     tools: selectedTools,
     provider: providerConfig?.name,
+    model: providerConfig?.model,
     mcpCount: mcpResult ? Object.keys(mcpResult).length : 0,
     workflowCount: installedWorkflows,
   })
@@ -213,15 +215,19 @@ async function stepProvider(
 
   if (options.silent && options.provider && options.apiKey) {
     // Non-interactive: use CLI flags
-    const { findProvider } = await import('../providers/presets.js')
-    const preset = findProvider(options.provider)
+    const { findProvider, findProviderFuzzy } = await import('../providers/presets.js')
+    const preset = findProvider(options.provider) ?? findProviderFuzzy(options.provider)
     if (preset) {
       providerResult = {
         name: preset.name,
         apiKey: options.apiKey,
         apiUrl: options.apiUrl || preset.apiUrl,
         authType: preset.authType,
+        model: options.model || preset.models?.default,
       }
+    }
+    else {
+      fail(`Unknown provider: "${options.provider}". Use --help to see provider ids.`)
     }
   }
   else if (!options.silent) {
@@ -391,6 +397,7 @@ async function stepSummary(summary: {
   lang: string
   tools: ToolType[]
   provider?: string
+  model?: string
   mcpCount: number
   workflowCount: number
 }): Promise<void> {
@@ -411,6 +418,9 @@ async function stepSummary(summary: {
   kvLine('Language', summary.lang)
   kvLine('Tools', summary.tools.map(t => TOOL_LABELS[t]).join(', '))
   kvLine('Provider', summary.provider || '-')
+  if (summary.model) {
+    kvLine('Model', summary.model)
+  }
   kvLine('MCP Services', String(summary.mcpCount))
   kvLine('Workflows', String(summary.workflowCount))
   console.log()

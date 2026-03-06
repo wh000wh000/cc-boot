@@ -532,9 +532,25 @@ export function getProvidersByRegion(): Record<'CN' | 'Global', UnifiedProvider[
   }
 }
 
-/** Find a provider by id */
+/** Find a provider by id (exact match) */
 export function findProvider(id: string): UnifiedProvider | undefined {
   return PROVIDER_PRESETS.find(p => p.id === id)
+}
+
+/**
+ * Find a provider by fuzzy match — case-insensitive on id or name.
+ * Useful for CLI flags like --provider "302ai" or --provider "DeepSeek".
+ */
+export function findProviderFuzzy(query: string): UnifiedProvider | undefined {
+  const q = query.toLowerCase().trim()
+  // First try: exact id match (already handled by findProvider, but keep for safety)
+  const byId = PROVIDER_PRESETS.find(p => p.id.toLowerCase() === q)
+  if (byId) return byId
+  // Second: name contains query
+  const byName = PROVIDER_PRESETS.find(p => p.name.toLowerCase().includes(q))
+  if (byName) return byName
+  // Third: query contains provider id (e.g., "deepseek-v3" → id "deepseek")
+  return PROVIDER_PRESETS.find(p => q.includes(p.id.toLowerCase()))
 }
 
 /** Get providers that support a specific tool */
