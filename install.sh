@@ -5,10 +5,31 @@ set -euo pipefail
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.sh | bash -s -- init --all -s -p 302ai -k "sk-xxx"
+#   bash install.sh --node-version 20 init --all   # pin a specific Node.js major version
 
 REQUIRED_NODE_MAJOR=18
 PREFERRED_NODE_MAJOR=22  # Current LTS
 CC_BOOT_PKG="@haibane/cc-boot"
+
+# --- Parse --node-version before any other args ---
+_PASSTHROUGH_ARGS=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --node-version)
+      PREFERRED_NODE_MAJOR="$2"
+      shift 2
+      ;;
+    --node-version=*)
+      PREFERRED_NODE_MAJOR="${1#--node-version=}"
+      shift
+      ;;
+    *)
+      _PASSTHROUGH_ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+set -- "${_PASSTHROUGH_ARGS[@]+"${_PASSTHROUGH_ARGS[@]}"}"
 
 # Colors
 RED='\033[0;31m'
@@ -164,16 +185,17 @@ main() {
   os="$(detect_os)"
   arch="$(detect_arch)"
   info "Platform: ${os}/${arch}"
+  info "Target Node.js: v${PREFERRED_NODE_MAJOR}.x"
 
   # Check Node.js
   if has node; then
     local major
     major="$(node_major)"
     if [ "$major" -ge "$PREFERRED_NODE_MAJOR" ]; then
-      ok "Node.js v$(node --version | sed 's/^v//') ✓ (LTS)"
+      ok "Node.js v$(node --version | sed 's/^v//') ✓ (meets target v${PREFERRED_NODE_MAJOR})"
     elif [ "$major" -ge "$REQUIRED_NODE_MAJOR" ]; then
-      warn "Node.js v$(node --version | sed 's/^v//') works but v${PREFERRED_NODE_MAJOR} LTS recommended"
-      # Still usable, don't force upgrade
+      warn "Node.js v$(node --version | sed 's/^v//') is below target v${PREFERRED_NODE_MAJOR} — installing..."
+      install_node "$os"
     else
       warn "Node.js v$(node --version | sed 's/^v//') is too old (need >= ${REQUIRED_NODE_MAJOR})"
       install_node "$os"

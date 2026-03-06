@@ -22,6 +22,9 @@ One-command bootstrap for AI coding CLI tools — installs, configures, and hand
 # macOS / Linux (auto-installs Node.js LTS 22.x if missing)
 curl -fsSL https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.sh | bash
 
+# Pin a specific Node.js major version (e.g. 20)
+bash <(curl -fsSL https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.sh) --node-version 20
+
 # Windows (PowerShell) — auto-installs Node.js LTS if missing
 irm https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.ps1 | iex
 

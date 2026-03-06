@@ -1,9 +1,17 @@
 # cc-boot installer for Windows — auto-installs Node.js if missing, then runs cc-boot
-# Usage: irm https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.ps1 | iex
+# Usage:
+#   irm https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.ps1 | iex
+#   iex "& { $(irm https://raw.githubusercontent.com/wh000wh000/cc-boot/main/install.ps1) } --node-version 20 init --all"
+
+param(
+    [int]$NodeVersion = 0,   # --node-version: pin a specific Node.js major (e.g. 20)
+    [Parameter(ValueFromRemainingArguments=$true)]
+    [string[]]$CcBootArgs
+)
 
 $ErrorActionPreference = "Stop"
 $REQUIRED_NODE_MAJOR = 18
-$PREFERRED_NODE_MAJOR = 22  # Current LTS
+$PREFERRED_NODE_MAJOR = if ($NodeVersion -gt 0) { $NodeVersion } else { 22 }  # Current LTS
 $CC_BOOT_PKG = "@haibane/cc-boot"
 
 function Write-Info  { Write-Host "[cc-boot] $args" -ForegroundColor Cyan }
@@ -92,15 +100,16 @@ function Install-Node {
 # Main
 Write-Banner
 Write-Info "Platform: Windows"
+Write-Info "Target Node.js: v$PREFERRED_NODE_MAJOR.x"
 
 if (Test-Command "node") {
     $major = Get-NodeMajor
     $ver = Get-NodeVersion
     if ($major -ge $PREFERRED_NODE_MAJOR) {
-        Write-Ok "Node.js v$ver OK (LTS)"
+        Write-Ok "Node.js v$ver OK (meets target v$PREFERRED_NODE_MAJOR)"
     } elseif ($major -ge $REQUIRED_NODE_MAJOR) {
-        Write-Warn "Node.js v$ver works but v$PREFERRED_NODE_MAJOR LTS recommended"
-        # Still usable, don't force upgrade
+        Write-Warn "Node.js v$ver is below target v$PREFERRED_NODE_MAJOR — installing..."
+        Install-Node
     } else {
         Write-Warn "Node.js v$ver is too old (need >= $REQUIRED_NODE_MAJOR)"
         Install-Node
@@ -125,9 +134,8 @@ if (-not (Test-Command "npm")) {
 # Run cc-boot
 Write-Info "Launching cc-boot..."
 Write-Host ""
-$argsToPass = $args -join " "
-if ($argsToPass) {
-    npx "$CC_BOOT_PKG@latest" @args
+if ($CcBootArgs -and $CcBootArgs.Count -gt 0) {
+    npx "$CC_BOOT_PKG@latest" @CcBootArgs
 } else {
     npx "$CC_BOOT_PKG@latest"
 }
