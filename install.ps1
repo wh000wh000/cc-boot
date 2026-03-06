@@ -3,12 +3,22 @@
 
 $ErrorActionPreference = "Stop"
 $REQUIRED_NODE_MAJOR = 18
+$PREFERRED_NODE_MAJOR = 22  # Current LTS
 $CC_BOOT_PKG = "@haibane/cc-boot"
 
 function Write-Info  { Write-Host "[cc-boot] $args" -ForegroundColor Cyan }
 function Write-Ok    { Write-Host "[cc-boot] $args" -ForegroundColor Green }
 function Write-Warn  { Write-Host "[cc-boot] $args" -ForegroundColor Yellow }
 function Write-Fail  { Write-Host "[cc-boot] $args" -ForegroundColor Red; exit 1 }
+
+function Write-Banner {
+    Write-Host ""
+    Write-Host "   +----------------------------------+" -ForegroundColor Cyan
+    Write-Host "   |        cc-boot installer         |" -ForegroundColor Cyan
+    Write-Host "   |   One-command AI coding setup    |" -ForegroundColor Cyan
+    Write-Host "   +----------------------------------+" -ForegroundColor Cyan
+    Write-Host ""
+}
 
 function Test-Command { param($Name) $null -ne (Get-Command $Name -ErrorAction SilentlyContinue) }
 
@@ -19,14 +29,20 @@ function Get-NodeMajor {
     } catch { return 0 }
 }
 
-function Install-Node {
-    Write-Info "Node.js >= $REQUIRED_NODE_MAJOR not found. Installing..."
+function Get-NodeVersion {
+    try {
+        return (node --version) -replace '^v', ''
+    } catch { return "unknown" }
+}
 
-    # Try fnm first
+function Install-Node {
+    Write-Info "Installing Node.js v$PREFERRED_NODE_MAJOR LTS..."
+
+    # Try fnm first (fast, cross-platform)
     if (Test-Command "fnm") {
-        Write-Info "Using fnm to install Node.js LTS..."
-        fnm install --lts
-        fnm use lts-latest
+        Write-Info "Using fnm to install Node.js $PREFERRED_NODE_MAJOR..."
+        fnm install $PREFERRED_NODE_MAJOR
+        fnm use $PREFERRED_NODE_MAJOR
         return
     }
 
@@ -54,22 +70,37 @@ function Install-Node {
         return
     }
 
-    # Fallback: install fnm
-    Write-Info "Installing fnm..."
-    winget install Schniz.fnm --accept-package-agreements --accept-source-agreements
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-    fnm install --lts
-    fnm use lts-latest
+    # Fallback: install fnm then use it
+    Write-Info "Installing fnm (Fast Node Manager)..."
+    if (Test-Command "winget") {
+        winget install Schniz.fnm --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } else {
+        # Direct fnm install via PowerShell
+        Invoke-WebRequest -Uri "https://fnm.vercel.app/install" -UseBasicParsing | Select-Object -ExpandProperty Content | Invoke-Expression
+    }
+
+    if (Test-Command "fnm") {
+        fnm install $PREFERRED_NODE_MAJOR
+        fnm use $PREFERRED_NODE_MAJOR
+        Write-Ok "fnm installed — add 'fnm env | Out-String | Invoke-Expression' to your PowerShell profile"
+    } else {
+        Write-Fail "Could not install Node.js automatically. Please install manually: https://nodejs.org"
+    }
 }
 
 # Main
-Write-Info "Detected OS: Windows"
+Write-Banner
+Write-Info "Platform: Windows"
 
 if (Test-Command "node") {
     $major = Get-NodeMajor
-    $ver = (node --version) -replace '^v', ''
-    if ($major -ge $REQUIRED_NODE_MAJOR) {
-        Write-Ok "Node.js v$ver found"
+    $ver = Get-NodeVersion
+    if ($major -ge $PREFERRED_NODE_MAJOR) {
+        Write-Ok "Node.js v$ver OK (LTS)"
+    } elseif ($major -ge $REQUIRED_NODE_MAJOR) {
+        Write-Warn "Node.js v$ver works but v$PREFERRED_NODE_MAJOR LTS recommended"
+        # Still usable, don't force upgrade
     } else {
         Write-Warn "Node.js v$ver is too old (need >= $REQUIRED_NODE_MAJOR)"
         Install-Node
@@ -83,9 +114,20 @@ if (-not (Test-Command "node")) {
     Write-Fail "Node.js installation failed. Please install manually: https://nodejs.org"
 }
 
-$ver = (node --version) -replace '^v', ''
-Write-Ok "Node.js v$ver ready"
+$finalVer = Get-NodeVersion
+Write-Ok "Node.js v$finalVer ready"
+
+# Verify npm
+if (-not (Test-Command "npm")) {
+    Write-Fail "npm not found. Please reinstall Node.js: https://nodejs.org"
+}
 
 # Run cc-boot
 Write-Info "Launching cc-boot..."
-npx "$CC_BOOT_PKG@latest" @args
+Write-Host ""
+$argsToPass = $args -join " "
+if ($argsToPass) {
+    npx "$CC_BOOT_PKG@latest" @args
+} else {
+    npx "$CC_BOOT_PKG@latest"
+}
