@@ -82,6 +82,15 @@ cli
     await update(options)
   }))
 
+// config: view and edit saved configuration
+cli
+  .command('config [action] [key] [value]', 'View or edit cc-boot configuration')
+  .option('--json', 'Output as JSON')
+  .action(withErrorHandler('config', async (action: string | undefined, key: string | undefined, value: string | undefined, options) => {
+    const { configCmd } = await import('./commands/config.js')
+    await configCmd(action, key, value, options)
+  }))
+
 // providers: list available API provider presets
 cli
   .command('providers', 'List all available API provider presets')

@@ -69,6 +69,17 @@ export default {
   'providers.none_found': 'No providers found matching the filter',
   'providers.usage_hint': 'Usage:',
 
+  // Config
+  'config.title': 'cc-boot Configuration',
+  'config.empty': 'No configuration saved yet. Run cc-boot init to get started.',
+  'config.file_hint': 'Config file: {{path}}',
+  'config.edit_hint': 'Edit keys: cc-boot config set <key> <value>',
+  'config.key_not_set': 'Key "{{key}}" is not set',
+  'config.unknown_key': 'Unknown config key: "{{key}}"',
+  'config.set_success': 'Set {{key}} = {{value}}',
+  'config.cleared': 'Configuration cleared',
+  'config.valid_keys': 'Valid keys: {{keys}}',
+
   // Errors
   'error.network': 'Network connection failed, check your network and proxy settings',
   'error.permission': 'Permission denied, try using sudo',

@@ -69,6 +69,17 @@ export default {
   'providers.none_found': '未找到匹配的供应商',
   'providers.usage_hint': '使用方式（Usage）：',
 
+  // Config
+  'config.title': 'cc-boot 配置',
+  'config.empty': '尚无配置。运行 cc-boot init 开始初始化。',
+  'config.file_hint': '配置文件：{{path}}',
+  'config.edit_hint': '修改配置：cc-boot config set <键> <值>',
+  'config.key_not_set': '键 "{{key}}" 尚未设置',
+  'config.unknown_key': '未知配置键：{{key}}',
+  'config.set_success': '已设置 {{key}} = {{value}}',
+  'config.cleared': '配置已清除',
+  'config.valid_keys': '有效键：{{keys}}',
+
   // Errors
   'error.network': '网络连接失败，请检查网络和代理设置',
   'error.permission': '权限不足，请尝试使用 sudo',
