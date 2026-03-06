@@ -64,6 +64,11 @@ export default {
   'menu.handoff': '移交到 CC Switch',
   'menu.exit': '退出',
 
+  // Providers
+  'providers.title': '可用 API 供应商列表',
+  'providers.none_found': '未找到匹配的供应商',
+  'providers.usage_hint': '使用方式（Usage）：',
+
   // Errors
   'error.network': '网络连接失败，请检查网络和代理设置',
   'error.permission': '权限不足，请尝试使用 sudo',

@@ -64,6 +64,11 @@ export default {
   'menu.handoff': 'Hand off to CC Switch',
   'menu.exit': 'Exit',
 
+  // Providers
+  'providers.title': 'Available API Providers',
+  'providers.none_found': 'No providers found matching the filter',
+  'providers.usage_hint': 'Usage:',
+
   // Errors
   'error.network': 'Network connection failed, check your network and proxy settings',
   'error.permission': 'Permission denied, try using sudo',

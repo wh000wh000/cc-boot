@@ -82,6 +82,18 @@ cli
     await update(options)
   }))
 
+// providers: list available API provider presets
+cli
+  .command('providers', 'List all available API provider presets')
+  .option('--tool <tool>', 'Filter by tool (claude-code, codex, gemini-cli, opencode, openclaw, ccr)')
+  .option('--region <region>', 'Filter by region (CN or Global)')
+  .option('--json', 'Output as JSON')
+  .action(withErrorHandler('providers', async (options) => {
+    banner()
+    const { listProviders } = await import('./commands/providers.js')
+    await listProviders(options)
+  }))
+
 cli.help()
 cli.version(version)
 
