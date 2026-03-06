@@ -37,10 +37,12 @@ export const OPENCODE_CONFIG_FILE = join(OPENCODE_CONFIG_DIR, 'config.toml')
 export const OPENCLAW_CONFIG_DIR = join(homedir(), '.openclaw')
 export const OPENCLAW_CONFIG_FILE = join(OPENCLAW_CONFIG_DIR, 'config.json')
 
-// CC Switch
-export const CC_SWITCH_APP_ID = 'com.nicepkg.cc-switch'
+// CC Switch — upstream: farion1231/cc-switch (cross-platform)
+export const CC_SWITCH_APP_ID = 'com.ccswitch.desktop'
 export const CC_SWITCH_BREW_CASK = 'cc-switch'
 export const CC_SWITCH_DEEP_LINK_PREFIX = 'ccswitch://'
+export const CC_SWITCH_REPO = 'farion1231/cc-switch'
+export const CC_SWITCH_RELEASES_URL = `https://github.com/${CC_SWITCH_REPO}/releases/latest`
 
 // Supported tools
 export const TOOL_TYPES = ['claude-code', 'codex', 'gemini-cli', 'opencode', 'openclaw', 'ccr'] as const

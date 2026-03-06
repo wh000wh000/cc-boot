@@ -1,15 +1,40 @@
 import { x } from 'tinyexec'
 import { t } from '../i18n/index.js'
 import { CC_SWITCH_BREW_CASK } from '../constants.js'
-import { spinner, success, fail, warn } from '../utils/ui.js'
-import { hasHomebrew } from '../utils/platform.js'
+import { spinner, success, fail, warn, info } from '../utils/ui.js'
+import { hasHomebrew, commandExists } from '../utils/platform.js'
 
-const CC_SWITCH_DOWNLOAD_URL = 'https://github.com/nicepkg/cc-switch/releases/latest'
+// Upstream: farion1231/cc-switch (cross-platform)
+const CC_SWITCH_REPO = 'farion1231/cc-switch'
+const CC_SWITCH_RELEASES_API = `https://api.github.com/repos/${CC_SWITCH_REPO}/releases/latest`
+const CC_SWITCH_RELEASES_URL = `https://github.com/${CC_SWITCH_REPO}/releases/latest`
 
 /**
- * Install CC Switch via Homebrew cask, with browser fallback.
+ * Install CC Switch with cross-platform support:
+ * - macOS: Homebrew cask → browser fallback
+ * - Linux: deb (apt) → rpm (dnf/yum) → AppImage fallback
+ * - Windows: browser fallback (xdg-open / powershell start)
  */
 export async function installCcSwitch(): Promise<void> {
+  const platform = process.platform
+
+  if (platform === 'darwin') {
+    await installMacos()
+  }
+  else if (platform === 'linux') {
+    await installLinux()
+  }
+  else if (platform === 'win32') {
+    await installWindows()
+  }
+  else {
+    warn(`Unsupported platform: ${platform}. Download CC Switch from: ${CC_SWITCH_RELEASES_URL}`)
+  }
+}
+
+// ── macOS ──────────────────────────────────────────────────────────────────
+
+async function installMacos(): Promise<void> {
   const s = spinner(t('ccswitch.installing'))
   s.start()
 
@@ -25,14 +50,212 @@ export async function installCcSwitch(): Promise<void> {
       warn('Homebrew install failed, opening download page...')
     }
   }
+  else {
+    s.stop()
+  }
 
   // Fallback: open download URL in browser
-  s.stop()
+  await openBrowser(CC_SWITCH_RELEASES_URL)
+  warn(`Please download CC Switch from: ${CC_SWITCH_RELEASES_URL}`)
+}
+
+// ── Linux ──────────────────────────────────────────────────────────────────
+
+async function installLinux(): Promise<void> {
+  // Fetch latest release info and find Linux assets
+  info('Fetching latest CC Switch release info...')
+
+  let assetUrl: string | null = null
+  let assetType: 'deb' | 'rpm' | 'appimage' | null = null
+
   try {
-    await x('open', [CC_SWITCH_DOWNLOAD_URL])
-    warn(`Please download CC Switch manually from: ${CC_SWITCH_DOWNLOAD_URL}`)
+    const releaseInfo = await fetchLatestRelease()
+    const hasDeb = await commandExists('apt-get') || await commandExists('apt')
+    const hasRpm = await commandExists('dnf') || await commandExists('yum')
+
+    // Prefer deb → rpm → AppImage based on available package manager
+    if (hasDeb) {
+      assetUrl = findLinuxAsset(releaseInfo, '.deb')
+      if (assetUrl) assetType = 'deb'
+    }
+    if (!assetUrl && hasRpm) {
+      assetUrl = findLinuxAsset(releaseInfo, '.rpm')
+      if (assetUrl) assetType = 'rpm'
+    }
+    if (!assetUrl) {
+      assetUrl = findLinuxAsset(releaseInfo, '.AppImage')
+      if (assetUrl) assetType = 'appimage'
+    }
+  }
+  catch (err) {
+    warn(`Could not fetch release info: ${err}`)
+  }
+
+  if (!assetUrl || !assetType) {
+    warn(`Could not determine Linux package. Opening download page...`)
+    await openBrowser(CC_SWITCH_RELEASES_URL)
+    warn(`Please download CC Switch from: ${CC_SWITCH_RELEASES_URL}`)
+    return
+  }
+
+  const s = spinner(t('ccswitch.installing'))
+  s.start()
+
+  try {
+    if (assetType === 'deb') {
+      await downloadAndInstallDeb(assetUrl)
+    }
+    else if (assetType === 'rpm') {
+      await downloadAndInstallRpm(assetUrl)
+    }
+    else if (assetType === 'appimage') {
+      await downloadAndInstallAppImage(assetUrl)
+    }
+    s.stop()
+    success(t('ccswitch.done'))
+  }
+  catch (err) {
+    s.stop()
+    warn(`Auto-install failed: ${err}`)
+    warn(`Please download manually from: ${CC_SWITCH_RELEASES_URL}`)
+  }
+}
+
+// ── Windows ────────────────────────────────────────────────────────────────
+
+async function installWindows(): Promise<void> {
+  // Try winget first
+  if (await commandExists('winget')) {
+    const s = spinner(t('ccswitch.installing'))
+    s.start()
+    try {
+      await x('winget', ['install', '--id', 'farion1231.CCSwitch', '--silent', '--accept-package-agreements', '--accept-source-agreements'])
+      s.stop()
+      success(t('ccswitch.done'))
+      return
+    }
+    catch {
+      s.stop()
+      warn('winget install failed, opening download page...')
+    }
+  }
+
+  // Fallback: open browser
+  await openBrowser(CC_SWITCH_RELEASES_URL)
+  warn(`Please download CC Switch from: ${CC_SWITCH_RELEASES_URL}`)
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+interface GithubRelease {
+  tag_name: string
+  assets: Array<{ name: string, browser_download_url: string }>
+}
+
+async function fetchLatestRelease(): Promise<GithubRelease> {
+  // Use node's built-in fetch (Node 18+)
+  const res = await fetch(CC_SWITCH_RELEASES_API, {
+    headers: { 'User-Agent': 'cc-boot-installer' },
+  })
+  if (!res.ok) {
+    throw new Error(`GitHub API returned ${res.status}`)
+  }
+  return res.json() as Promise<GithubRelease>
+}
+
+function findLinuxAsset(release: GithubRelease, ext: string): string | null {
+  const arch = process.arch === 'arm64' ? 'arm64' : 'x86_64'
+  // Try arch-specific first
+  let asset = release.assets.find(a =>
+    a.name.toLowerCase().includes('linux')
+    && a.name.includes(arch)
+    && a.name.toLowerCase().endsWith(ext.toLowerCase())
+    && !a.name.endsWith('.sig')
+  )
+  // Fallback to any Linux asset with matching ext
+  if (!asset) {
+    asset = release.assets.find(a =>
+      a.name.toLowerCase().includes('linux')
+      && a.name.toLowerCase().endsWith(ext.toLowerCase())
+      && !a.name.endsWith('.sig')
+    )
+  }
+  return asset?.browser_download_url ?? null
+}
+
+async function downloadAndInstallDeb(url: string): Promise<void> {
+  const tmpFile = `/tmp/cc-switch-installer.deb`
+  await downloadFile(url, tmpFile)
+  // Try without sudo first, then with sudo
+  try {
+    await x('dpkg', ['-i', tmpFile])
   }
   catch {
-    fail(`Could not open browser. Download CC Switch from: ${CC_SWITCH_DOWNLOAD_URL}`)
+    await x('sudo', ['dpkg', '-i', tmpFile])
+  }
+}
+
+async function downloadAndInstallRpm(url: string): Promise<void> {
+  const tmpFile = `/tmp/cc-switch-installer.rpm`
+  await downloadFile(url, tmpFile)
+  const hasDnf = await commandExists('dnf')
+  const pm = hasDnf ? 'dnf' : 'yum'
+  try {
+    await x(pm, ['localinstall', '-y', tmpFile])
+  }
+  catch {
+    await x('sudo', [pm, 'localinstall', '-y', tmpFile])
+  }
+}
+
+async function downloadAndInstallAppImage(url: string): Promise<void> {
+  const installDir = `${process.env.HOME ?? '/root'}/.local/bin`
+  const destFile = `${installDir}/cc-switch`
+  // Ensure directory exists
+  await x('mkdir', ['-p', installDir])
+  await downloadFile(url, destFile)
+  await x('chmod', ['+x', destFile])
+  info(`CC Switch AppImage installed to ${destFile}`)
+  info(`Make sure ${installDir} is in your PATH`)
+}
+
+async function downloadFile(url: string, dest: string): Promise<void> {
+  // Use wget or curl
+  const hasWget = await commandExists('wget')
+  if (hasWget) {
+    await x('wget', ['-q', '-O', dest, url])
+  }
+  else {
+    const hasCurl = await commandExists('curl')
+    if (hasCurl) {
+      await x('curl', ['-sL', '-o', dest, url])
+    }
+    else {
+      // Node fetch fallback
+      const res = await fetch(url, { headers: { 'User-Agent': 'cc-boot-installer' } })
+      if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+      const buf = await res.arrayBuffer()
+      const { writeFileSync } = await import('node:fs')
+      writeFileSync(dest, Buffer.from(buf))
+    }
+  }
+}
+
+async function openBrowser(url: string): Promise<void> {
+  const platform = process.platform
+  try {
+    if (platform === 'darwin') {
+      await x('open', [url])
+    }
+    else if (platform === 'win32') {
+      await x('powershell', ['-Command', `Start-Process '${url}'`])
+    }
+    else {
+      // Linux: xdg-open
+      await x('xdg-open', [url])
+    }
+  }
+  catch {
+    // Silently ignore if browser open fails
   }
 }
